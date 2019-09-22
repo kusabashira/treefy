@@ -1,0 +1,146 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use utf8;
+use Getopt::Long qw(:config posix_default no_ignore_case gnu_compat bundling);
+use File::Basename qw(basename);
+
+use open IO => ':encoding(UTF-8)';
+binmode STDIN, ':encoding(UTF-8)';
+binmode STDOUT, ':encoding(UTF-8)';
+binmode STDERR, ':encoding(UTF-8)';
+
+my $cmd_name = basename($0);
+my $usage = <<EOL;
+usage: $cmd_name [<option(s)>] [<file(s)>]
+add branches to the text indented.
+
+options:
+  -i, --indent-string=INDENT   use INDENT instead of TAB for indent string
+  -m, --margin=N_MARGIN        add N_MARGIN margin between each rows
+      --help                   print usage
+EOL
+
+sub print_error_and_abort {
+    my ($error) = @_;
+    chomp $error;
+    print STDERR "$cmd_name: $error\n";
+    exit 1;
+}
+
+sub read_lines_from_argf {
+    my $lines = [];
+    while (my $line = <<>>) {
+        chomp $line;
+        push @$lines, $line;
+    }
+    return $lines;
+}
+
+sub lines_to_nodes {
+    my ($lines, $indent_string) = @_;
+    my ($nodes, undef) = lines_to_nodes_recur($lines, quotemeta($indent_string), 0, 0, []);
+    return $nodes;
+}
+
+sub lines_to_nodes_recur {
+    my ($lines, $indent_regex, $first_line_i, $depth, $nodes) = @_;
+
+    for (my $line_i = $first_line_i; $line_i < @$lines; $line_i++) {
+        my $line = $lines->[$line_i];
+
+        if ($line =~ m/^ (?: $indent_regex ) {@{[$depth + 2]}}/x) {
+
+            die "indent depth increased two or more at a time\n";
+
+        } elsif ($line =~ m/^ (?: $indent_regex ) {@{[$depth + 1]}}/x) {
+
+            if (@$nodes == 0) {
+                die "a node found which doesn't have a parent\n";
+            }
+
+            my ($subnodes, $last_line_i) = lines_to_nodes_recur($lines, $indent_regex, $line_i, $depth + 1, []);
+            $nodes->[$#$nodes]{subnodes} = $subnodes;
+            $line_i = $last_line_i;
+
+        } elsif ($line =~ m/^(?: $indent_regex ) {$depth}/x) {
+
+            my $text = $line =~ s/^(?: $indent_regex ) {$depth}//rx;
+            my $node = +{text => $text, subnodes => []};
+            push @$nodes, $node;
+
+        } else {
+
+            return $nodes, $line_i - 1;
+
+        }
+    }
+
+    return $nodes, scalar(@$lines);
+}
+
+sub dump_nodes {
+    my ($nodes, $n_margin) = @_;
+
+    for (my $node_i = 0; $node_i < @$nodes; $node_i++) {
+        my $node = $nodes->[$node_i];
+
+        if ($node_i > 0) {
+            for (my $i = 0; $i < $n_margin; $i++) {
+                print "\n";
+            }
+        }
+
+        dump_node_recur($node, $n_margin, "", "", "");
+    }
+}
+
+sub dump_node_recur {
+    my ($node, $n_margin, $text_prefix, $subnode_prefix) = @_;
+
+    my $text     = $node->{text};
+    my $subnodes = $node->{subnodes};
+
+    print "$text_prefix$text\n";
+
+    for (my $subnode_i = 0; $subnode_i < @$subnodes; $subnode_i++) {
+        my $subnode = $subnodes->[$subnode_i];
+
+        for (my $i = 0; $i < $n_margin; $i++) {
+            print "$subnode_prefix|\n";
+        }
+
+        if ($subnode_i == $#$subnodes) {
+            dump_node_recur($subnode, $n_margin, "$subnode_prefix`-- ", "$subnode_prefix    ");
+        } else {
+            dump_node_recur($subnode, $n_margin, "$subnode_prefix|-- ", "$subnode_prefix|   ");
+        }
+    }
+}
+
+sub main {
+    local $SIG{__WARN__} = \&print_error_and_abort;
+
+    my $indent_string = "\t";
+    my $n_margin      = 0;
+    my $is_help       = 0;
+    GetOptions(
+        'i|indent-string=s' => \$indent_string,
+        'm|margin=i'        => \$n_margin,
+        'help'              => \$is_help,
+    );
+    if ($is_help) {
+        print $usage;
+        exit 0;
+    }
+
+    eval {
+        my $lines = read_lines_from_argf;
+        my $nodes = lines_to_nodes($lines, $indent_string);
+        dump_nodes($nodes, $n_margin);
+    };
+    if ($@) {
+        print_error_and_abort $@;
+    }
+}
+main;
