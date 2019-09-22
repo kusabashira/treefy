@@ -1,6 +1,8 @@
 treefy
 ======
 
+[![Build Status](https://travis-ci.org/kusabashira/treefy.svg?branch=master)](https://travis-ci.org/kusabashira/treefy)
+
 Add branches to the text indented.
 
 ```
