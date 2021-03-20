@@ -1,7 +1,7 @@
 treefy
 ======
 
-[![Build Status](https://travis-ci.org/kusabashira/treefy.svg?branch=master)](https://travis-ci.org/kusabashira/treefy)
+![CI](https://github.com/kusabashira/treefy/workflows/CI/badge.svg)
 
 Add branches to the text indented.
 

@@ -103,7 +103,7 @@ check() {
   [[ $(cat "$stderr") =~ ^'treefy: indent depth increased two or more at a time' ]]
 }
 
-@test 'treefy: fail if a node found which doesn'"'"'t have a parent' {
+@test 'treefy: fail if a node found which does not have a parent' {
   src=$(printf "%s\n" $'
   \tAAA
   \tBBB
@@ -257,4 +257,4 @@ check() {
   [[ $(cat "$stdout") == $dst ]]
 }
 
-# vim: ft=sh
+# vim: ft=bash
