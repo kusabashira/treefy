@@ -257,4 +257,35 @@ check() {
   [[ $(cat "$stdout") == $dst ]]
 }
 
+@test 'treefy: can accept multibyte arguments' {
+  src=$(printf "%s\n" $'
+  AAA
+  　BBB
+  　　CCC
+  　　　DDD
+  　EEE
+  　FFF
+  　　GGG
+  　　HHH
+  III
+  JJJ
+  ' | sed -e '1d' -e 's/^  //')
+  dst=$(printf "%s\n" $'
+  AAA
+  |-- BBB
+  |   `-- CCC
+  |       `-- DDD
+  |-- EEE
+  `-- FFF
+      |-- GGG
+      `-- HHH
+  III
+  JJJ
+  ' | sed -e '1d' -e 's/^  //')
+
+  check "$treefy" -i'　' <<< "$src"
+  [[ $(cat "$exitcode") == 0 ]]
+  [[ $(cat "$stdout") == $dst ]]
+}
+
 # vim: ft=bash
