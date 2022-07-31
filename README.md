@@ -1,7 +1,7 @@
 treefy
 ======
 
-![CI](https://github.com/kusabashira/treefy/workflows/CI/badge.svg)
+![CI](https://github.com/nil2nekoni/treefy/workflows/CI/badge.svg)
 
 Add branches to the text indented.
 
@@ -61,7 +61,7 @@ Installation
 ### Example
 
 ```
-$ curl -L https://raw.githubusercontent.com/kusabashira/treefy/master/treefy > ~/bin/treefy
+$ curl -L https://raw.githubusercontent.com/nil2nekoni2/treefy/master/treefy > ~/bin/treefy
 $ chmod +x ~/bin/treefy
 ```
 
