@@ -42,9 +42,9 @@ $ treefy [<option(s)>] [<file(s)>]
 add branches to the text indented.
 
 options:
-  -i, --indent-string=INDENT   use INDENT instead of TAB for indent string
-  -m, --margin=N_MARGIN        add N_MARGIN margin between each rows
-      --help                   print usage
+  -i, --indent-string=INDENT  use INDENT instead of TAB for indent string
+  -m, --margin=N_MARGIN       add N_MARGIN margin between each rows
+      --help                  print usage and exit
 ```
 
 Requirements
